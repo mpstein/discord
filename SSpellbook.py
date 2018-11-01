@@ -1,6 +1,11 @@
+# NOTE
+# THIS REQUIRES PYTHON v3.6 
+
+# Python 3.7 introduces breaking changes with async calls which destroys
+# the discord package. Trust me, it's a bad day.
+
 import random
 import discord
-import aiohttp
 import os
 from discord.ext import commands
 from discord.ext.commands import Bot
@@ -22,6 +27,7 @@ BOT_PREFIX=("?", "!")
 # via `export DISCORD_TOKEN=token`
 # And use the definition below.
 TOKEN = os.environ['DISCORD_TOKEN']
+
 client = commands.Bot(command_prefix=BOT_PREFIX)
 
 chat_responses = {
@@ -45,29 +51,24 @@ async def on_ready():
     await client.change_presence(game=discord.Game(name="studying in the library"))
     print("Logged in as " + client.user.name)
 
-
 @client.event
 async def on_message(message):
     #Don't talk to yourself
     if message.author == client.user:
         return
 
-    response_string = ""
+    # Thanks Juan for cleaner code!
+    message_responses = [response for key, response in chat_responses.items() if key.upper() in message.content.upper()]
+    response_string = str(' and '.join(message_responses))
+    if message_responses:
+        await client.send_message(message.channel, content=response_string)
 
-    #Split out words and check for matches
-    for key in chat_responses.keys():
-      if key.upper() in message.content.upper():
-          if len(response_string) == 0:
-              response_string = chat_responses[key]
-          else:
-              response_string = response_string + " and " + chat_responses[key]
-    if len(response_string) != 0:
-        await client.send_message(message.channel, content=str(response_string))
-        
     await client.process_commands(message)
 
 
 @client.command(name="spell_choice", description="Chooses the appropriate spell for the occasion", aliases=["choose_spell", "spell", "which_spell"], pass_context=True)
 async def spell_choice(context):
     await client.send_message(context.message.channel, content=random.choice(spell_responses))
+
+# Actually do the thing
 client.run(TOKEN)
