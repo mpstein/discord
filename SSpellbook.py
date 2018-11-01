@@ -25,8 +25,9 @@ TOKEN = os.environ['DISCORD_TOKEN']
 client = commands.Bot(command_prefix=BOT_PREFIX)
 
 chat_responses = {
-    "FIREBALL":"hot",
-    "THUNDERWAVE":"whoosh"
+    "fireball":"hot",
+    "THUNDERWAVE":"whoosh",
+    "MULTIPLE WORD SPELL":"Fuck this shit"
     }
 
 
@@ -51,14 +52,20 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    input = message.content.upper()
-    if input in chat_responses:
-        #Fix this so it searches for substring match, not full
-        await client.send_message(message.channel, content=chat_responses[input])
-        client.process_commands(message)
+    response_string = ""
 
+    #Split out words and check for matches
+    for key in chat_responses.keys():
+      if key.upper() in message.content.upper():
+          if len(response_string) == 0:
+              response_string = chat_responses[key]
+          else:
+              response_string = response_string + " and " + chat_responses[key]
+    if len(response_string) != 0:
+        await client.send_message(message.channel, content=str(response_string))
+        
     await client.process_commands(message)
- 
+
 
 @client.command(name="spell_choice", description="Chooses the appropriate spell for the occasion", aliases=["choose_spell", "spell", "which_spell"], pass_context=True)
 async def spell_choice(context):
