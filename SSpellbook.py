@@ -72,9 +72,15 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    #Please, shut up!
+    if "NOBOT" in message.content.upper():
+        print("Matched nobot")
+        return
+
+
     # Thanks Juan for cleaner code!
-    message_responses = [response for key, response in chat_responses.items() if key.upper() in message.content.upper()]
-    response_string = str(' and '.join(message_responses))
+    message_responses = [key.title() + ": " + response for key, response in chat_responses.items() if key.upper() in message.content.upper()]
+    response_string = str(' \n '.join(message_responses))
     if message_responses:
         await client.send_message(message.channel, content=response_string)
 
